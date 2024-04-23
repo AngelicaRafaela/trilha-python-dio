@@ -9,14 +9,17 @@ class Cliente:
         self.contas = []
 
     def realizar_transacao(self, conta, transacao):
+        # Método para realizar uma transação em uma conta associada ao cliente
         transacao.registrar(conta)
 
     def adicionar_conta(self, conta):
+        # Método para adicionar uma nova conta à lista de contas do cliente
         self.contas.append(conta)
 
 
 class PessoaFisica(Cliente):
     def __init__(self, nome, data_nascimento, cpf, endereco):
+        # Inicialização de um cliente do tipo Pessoa Física
         super().__init__(endereco)
         self.nome = nome
         self.data_nascimento = data_nascimento
@@ -25,6 +28,7 @@ class PessoaFisica(Cliente):
 
 class Conta:
     def __init__(self, numero, cliente):
+        # Inicialização de uma conta
         self._saldo = 0
         self._numero = numero
         self._agencia = "0001"
@@ -33,29 +37,36 @@ class Conta:
 
     @classmethod
     def nova_conta(cls, cliente, numero):
+        # Método de classe para criar uma nova conta
         return cls(numero, cliente)
 
     @property
     def saldo(self):
+        # Propriedade para obter o saldo da conta
         return self._saldo
 
     @property
     def numero(self):
+        # Propriedade para obter o número da conta
         return self._numero
 
     @property
     def agencia(self):
+        # Propriedade para obter a agência da conta
         return self._agencia
 
     @property
     def cliente(self):
+        # Propriedade para obter o cliente associado à conta
         return self._cliente
 
     @property
     def historico(self):
+        # Propriedade para obter o histórico de transações da conta
         return self._historico
 
     def sacar(self, valor):
+        # Método para realizar um saque na conta
         saldo = self.saldo
         excedeu_saldo = valor > saldo
 
@@ -73,6 +84,7 @@ class Conta:
         return False
 
     def depositar(self, valor):
+        # Método para realizar um depósito na conta
         if valor > 0:
             self._saldo += valor
             print("\n=== Depósito realizado com sucesso! ===")
@@ -85,11 +97,13 @@ class Conta:
 
 class ContaCorrente(Conta):
     def __init__(self, numero, cliente, limite=500, limite_saques=3):
+        # Inicialização de uma conta corrente
         super().__init__(numero, cliente)
         self._limite = limite
         self._limite_saques = limite_saques
 
     def sacar(self, valor):
+        # Método para realizar um saque em uma conta corrente
         numero_saques = len(
             [transacao for transacao in self.historico.transacoes if transacao["tipo"] == Saque.__name__]
         )
@@ -109,6 +123,7 @@ class ContaCorrente(Conta):
         return False
 
     def __str__(self):
+        # Método para representar uma conta corrente como uma string formatada
         return f"""\
             Agência:\t{self.agencia}
             C/C:\t\t{self.numero}
@@ -129,7 +144,7 @@ class Historico:
             {
                 "tipo": transacao.__class__.__name__,
                 "valor": transacao.valor,
-                "data": datetime.now().strftime("%d-%m-%Y %H:%M:%s"),
+                "data": datetime.now().strftime("%d-%m-%Y %H:%M"),
             }
         )
 
@@ -138,22 +153,27 @@ class Transacao(ABC):
     @property
     @abstractproperty
     def valor(self):
+        # Propriedade para obter o valor da transação
         pass
 
     @abstractclassmethod
     def registrar(self, conta):
+        # Método abstrato para registrar uma transação em uma conta
         pass
 
 
 class Saque(Transacao):
     def __init__(self, valor):
+        # Inicialização de uma transação de saque
         self._valor = valor
 
     @property
     def valor(self):
+        # Propriedade para obter o valor do saque
         return self._valor
 
     def registrar(self, conta):
+        # Método para registrar um saque em uma conta
         sucesso_transacao = conta.sacar(self.valor)
 
         if sucesso_transacao:
@@ -162,13 +182,16 @@ class Saque(Transacao):
 
 class Deposito(Transacao):
     def __init__(self, valor):
+        # Inicialização de uma transação de depósito
         self._valor = valor
 
     @property
     def valor(self):
+        # Propriedade para obter o valor do depósito
         return self._valor
 
     def registrar(self, conta):
+        # Método para registrar um depósito em uma conta
         sucesso_transacao = conta.depositar(self.valor)
 
         if sucesso_transacao:
@@ -176,6 +199,7 @@ class Deposito(Transacao):
 
 
 def menu():
+    # Função para exibir o menu de opções
     menu = """\n
     ================ MENU ================
     [d]\tDepositar
@@ -190,11 +214,13 @@ def menu():
 
 
 def filtrar_cliente(cpf, clientes):
+    # Função para filtrar um cliente por CPF
     clientes_filtrados = [cliente for cliente in clientes if cliente.cpf == cpf]
     return clientes_filtrados[0] if clientes_filtrados else None
 
 
 def recuperar_conta_cliente(cliente):
+    # Função para recuperar a primeira conta associada a um cliente
     if not cliente.contas:
         print("\n@@@ Cliente não possui conta! @@@")
         return
@@ -204,6 +230,7 @@ def recuperar_conta_cliente(cliente):
 
 
 def depositar(clientes):
+    # Função para realizar um depósito
     cpf = input("Informe o CPF do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
 
@@ -222,6 +249,7 @@ def depositar(clientes):
 
 
 def sacar(clientes):
+    # Função para realizar um saque
     cpf = input("Informe o CPF do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
 
@@ -240,6 +268,7 @@ def sacar(clientes):
 
 
 def exibir_extrato(clientes):
+    # Função para exibir o extrato de uma conta
     cpf = input("Informe o CPF do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
 
@@ -267,6 +296,7 @@ def exibir_extrato(clientes):
 
 
 def criar_cliente(clientes):
+    # Função para criar um novo cliente
     cpf = input("Informe o CPF (somente número): ")
     cliente = filtrar_cliente(cpf, clientes)
 
@@ -286,6 +316,7 @@ def criar_cliente(clientes):
 
 
 def criar_conta(numero_conta, clientes, contas):
+    # Função para criar uma nova conta
     cpf = input("Informe o CPF do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
 
@@ -301,12 +332,14 @@ def criar_conta(numero_conta, clientes, contas):
 
 
 def listar_contas(contas):
+    # Função para listar todas as contas
     for conta in contas:
         print("=" * 100)
         print(textwrap.dedent(str(conta)))
 
 
 def main():
+    # Função principal
     clientes = []
     contas = []
 
